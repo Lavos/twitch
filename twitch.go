@@ -35,7 +35,11 @@ type TwitchClient struct {
 }
 
 func (t *TwitchClient) Follows() ([]string, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.twitch.tv/kraken/users/%s/follows/channels", t.UserName), nil)
+	u, _ := url.Parse(fmt.Sprintf("https://api.twitch.tv/kraken/users/%s/follows/channels", t.UserName))
+	q := u.Query()
+	q.Set("limit", "100")
+	u.RawQuery = q.Encode()
+	req, err := http.NewRequest("GET", u.String(),  nil)
 	req.Header.Add("Accept", "application/vnd.twitchtv.v2+json")
 
 	if err != nil {
