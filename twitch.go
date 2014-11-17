@@ -34,7 +34,7 @@ type TwitchClient struct {
 	UserName string
 }
 
-func (t *TwitchClient) Follows() ([]string, error) {
+func (t *TwitchClient) Follows() ([]Channel, error) {
 	u, _ := url.Parse(fmt.Sprintf("https://api.twitch.tv/kraken/users/%s/follows/channels", t.UserName))
 	q := u.Query()
 	q.Set("limit", "100")
@@ -65,19 +65,24 @@ func (t *TwitchClient) Follows() ([]string, error) {
 		return nil, json_err
 	}
 
-	names := make([]string, len(r.Follows))
+	names := make([]Channel, len(r.Follows))
 	for i, f := range r.Follows {
-		names[i] = f.Channel.Name
+		names[i] = f.Channel
 	}
 
 	return names, nil
 }
 
-func (t *TwitchClient) Online() ([]string, error) {
-	names, err := t.Follows()
+func (t *TwitchClient) Online() ([]Channel, error) {
+	channels, err := t.Follows()
 
 	if err != nil {
 		return nil, err
+	}
+
+	names := make([]string, len(channels))
+	for i, c := range channels {
+		names[i] = c.Name
 	}
 
 	online_url, _ := url.Parse("https://api.twitch.tv/kraken/streams")
@@ -107,9 +112,9 @@ func (t *TwitchClient) Online() ([]string, error) {
 		return nil, json_err
 	}
 
-	online_names := make([]string, len(r.Streams))
+	online_names := make([]Channel, len(r.Streams))
 	for i, o := range r.Streams {
-		online_names[i] = o.Channel.Name
+		online_names[i] = o.Channel
 	}
 
 	return online_names, nil
