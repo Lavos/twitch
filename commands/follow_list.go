@@ -17,10 +17,15 @@ func main () {
 
 	tc := &twitch.TwitchClient{username}
 
-	names, err := tc.Follows()
+	channels, err := tc.Follows()
 
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	names := make([]string, len(channels))
+	for i, c := range channels {
+		names[i] = c.Name
 	}
 
 	fmt.Print(strings.Join(names, " "))
