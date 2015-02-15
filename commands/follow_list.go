@@ -28,5 +28,7 @@ func main () {
 		names[i] = c.Name
 	}
 
-	fmt.Print(strings.Join(names, " "))
+	if len(names) > 0 {
+		fmt.Print(strings.Join(names, " "))
+	}
 }
