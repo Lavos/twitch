@@ -27,6 +27,10 @@ type StreamsResponse struct {
 }
 
 type Stream struct {
+	Viewers float64 `json:"viewers"`
+	FPS float64 `json:"average_fps"`
+	Height float64 `json:"video_height"`
+
 	Channel Channel `json:"channel"`
 }
 
@@ -73,7 +77,7 @@ func (t *TwitchClient) Follows() ([]Channel, error) {
 	return names, nil
 }
 
-func (t *TwitchClient) Online() ([]Channel, error) {
+func (t *TwitchClient) Online() ([]Stream, error) {
 	channels, err := t.Follows()
 
 	if err != nil {
@@ -91,7 +95,7 @@ func (t *TwitchClient) Online() ([]Channel, error) {
 	online_url.RawQuery = q.Encode()
 
 	req, _ := http.NewRequest("GET", online_url.String(), nil)
-	req.Header.Add("Accept", "application/vnd.twitchtv.v2+json")
+	req.Header.Add("Accept", "application/vnd.twitchtv.v3+json")
 
 	resp, err := http.DefaultClient.Do(req)
 
@@ -112,10 +116,5 @@ func (t *TwitchClient) Online() ([]Channel, error) {
 		return nil, json_err
 	}
 
-	online_names := make([]Channel, len(r.Streams))
-	for i, o := range r.Streams {
-		online_names[i] = o.Channel
-	}
-
-	return online_names, nil
+	return r.Streams, nil
 }
