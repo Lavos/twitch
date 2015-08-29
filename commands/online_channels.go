@@ -31,9 +31,7 @@ func main () {
 		ct.ChangeColor(ct.White, true, ct.Black, true)
 		fmt.Printf("%s", c.Channel.Name)
 		ct.ChangeColor(ct.Green, false, ct.Black, false)
-		fmt.Printf(" %s \n", c.Channel.Game)
-		ct.ChangeColor(ct.Cyan, false, ct.Black, false)
-		fmt.Printf("  %s", c.Channel.Status)
+		fmt.Printf(" %s", c.Channel.Game)
 		ct.ChangeColor(ct.Red, false, ct.Black, false)
 		fmt.Printf(" [")
 		ct.ChangeColor(ct.White, false, ct.Black, false)
@@ -48,5 +46,7 @@ func main () {
 		fmt.Printf("%f", c.FPS)
 		ct.ChangeColor(ct.Red, false, ct.Black, false)
 		fmt.Printf("]\n")
+		ct.ChangeColor(ct.Cyan, false, ct.Black, false)
+		fmt.Printf("  %s\n", c.Channel.Status)
 	}
 }
