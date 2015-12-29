@@ -35,14 +35,12 @@ func main () {
 	}
 
 	if len(names) > 0 {
-		if (*newlines) {
-			for _, name := range names {
-				fmt.Printf("%s\n", name)
-			}
+		var spacer = " "
 
-			return
+		if (*newlines) {
+			spacer = "\n"
 		}
 
-		fmt.Print(strings.Join(names, " "))
+		fmt.Print(strings.Join(names, spacer))
 	}
 }
