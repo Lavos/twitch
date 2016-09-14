@@ -17,6 +17,7 @@ var (
 	tickerStyle tcell.Style
 	nameStyle tcell.Style
 	gameStyle tcell.Style
+	viewerStyle tcell.Style
 )
 
 const (
@@ -29,7 +30,7 @@ type Configuration struct {
 }
 
 func ticker(count int) {
-	s.SetContent(count, 0, tcell.RuneDiamond, nil, tickerStyle)
+	s.SetContent(count % 20, 0, tcell.RuneDiamond, nil, tickerStyle)
 	s.Show()
 }
 
@@ -39,24 +40,44 @@ func draw() {
 	streams, err := t.Online()
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		for x, r := range err.Error() {
+			s.SetContent(x, 11, r, nil, tickerStyle)
+		}
+
+		s.Show()
 		return
 	}
 
-	var y int = 1
+	var viewers_column_end, name_column_end int
 
-	for row, b := range streams {
+	// make map of results
+	for _, b := range streams {
+		if len(b.Channel.Name) > name_column_end {
+			name_column_end = len(b.Channel.Name)
+		}
+
+		characters := len(fmt.Sprintf("%9.f", b.Viewers))
+
+		if viewers_column_end < characters {
+			viewers_column_end = characters
+		}
+	}
+
+	// draw columns
+	for y, b := range streams {
 		var x int
 		var r rune
 
-		for x, r = range b.Channel.Name {
-			s.SetContent(x, y + row, r, nil, nameStyle)
+		for x, r = range fmt.Sprintf("%9.f", b.Viewers) {
+			s.SetContent(x, y + 1, r, nil, viewerStyle)
 		}
 
-		x += 2
+		for x, r = range b.Channel.Name {
+			s.SetContent(x + viewers_column_end + 1, y + 1, r, nil, nameStyle)
+		}
 
-		for gx, r := range b.Channel.Game {
-			s.SetContent(x + gx, y + row, r, nil, gameStyle)
+		for x, r = range b.Channel.Game {
+			s.SetContent(x + viewers_column_end + name_column_end + 2, y + 1, r, nil, gameStyle)
 		}
 	}
 
@@ -76,9 +97,10 @@ func main() {
 	tcell.SetEncodingFallback(tcell.EncodingFallbackASCII)
 	s, err = tcell.NewScreen()
 
-	tickerStyle = gameStyle.Foreground(tcell.ColorRed)
+	tickerStyle = tickerStyle.Foreground(tcell.ColorRed)
 	nameStyle = nameStyle.Foreground(tcell.ColorWhite)
 	gameStyle = gameStyle.Foreground(tcell.ColorGreen)
+	viewerStyle = viewerStyle.Foreground(tcell.ColorFuchsia)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
@@ -104,7 +126,7 @@ func main() {
 			switch ev := ev.(type) {
 			case *tcell.EventKey:
 				switch ev.Key() {
-				case tcell.KeyEscape, tcell.KeyEnter:
+				case tcell.KeyEscape:
 					close(quit)
 					return
 
@@ -118,20 +140,17 @@ func main() {
 		}
 	}()
 
-	draw()
-
 	var counter int
 
 	for {
 		select {
 		case <-tc.C:
-			if counter > 0 && counter % 20 == 0 {
+			if counter % 20 == 0 {
 				draw()
-				counter = 0
-			} else {
-				ticker(counter)
-				counter++
 			}
+
+			ticker(counter)
+			counter++
 
 		case <-quit:
 			s.Fini()
