@@ -21,7 +21,13 @@ func main () {
 		log.Fatalf("No username found in TWITCH_USERNAME.")
 	}
 
-	tc := &twitch.TwitchClient{username}
+	client_id := os.Getenv("TWITCH_CLIENTID")
+
+	if client_id == "" {
+		log.Fatalf("No client_id found in TWITCH_CLIENTID.")
+	}
+
+	tc := &twitch.TwitchClient{username, client_id}
 
 	channels, err := tc.Follows()
 

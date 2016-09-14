@@ -36,6 +36,7 @@ type Stream struct {
 
 type TwitchClient struct {
 	UserName string
+	ClientID string
 }
 
 func (t *TwitchClient) Follows() ([]Channel, error) {
@@ -45,6 +46,7 @@ func (t *TwitchClient) Follows() ([]Channel, error) {
 	u.RawQuery = q.Encode()
 	req, err := http.NewRequest("GET", u.String(),  nil)
 	req.Header.Add("Accept", "application/vnd.twitchtv.v2+json")
+	req.Header.Add("Client-ID", t.ClientID)
 
 	if err != nil {
 		return nil, err
@@ -96,6 +98,7 @@ func (t *TwitchClient) Online() ([]Stream, error) {
 
 	req, _ := http.NewRequest("GET", online_url.String(), nil)
 	req.Header.Add("Accept", "application/vnd.twitchtv.v3+json")
+	req.Header.Add("Client-ID", t.ClientID)
 
 	resp, err := http.DefaultClient.Do(req)
 
