@@ -17,6 +17,7 @@ var (
 	tickerStyle tcell.Style
 	nameStyle tcell.Style
 	gameStyle tcell.Style
+	statusStyle tcell.Style
 	viewerStyle tcell.Style
 )
 
@@ -41,25 +42,29 @@ func draw() {
 
 	if err != nil {
 		for x, r := range err.Error() {
-			s.SetContent(x, 11, r, nil, tickerStyle)
+			s.SetContent(x + 21, 0, r, nil, tickerStyle)
 		}
 
 		s.Show()
 		return
 	}
 
-	var viewers_column_end, name_column_end int
+	var viewers_column_end, name_column_end, game_column_end int
 
-	// make map of results
+	// get column widths
 	for _, b := range streams {
 		if len(b.Channel.Name) > name_column_end {
 			name_column_end = len(b.Channel.Name)
 		}
 
-		characters := len(fmt.Sprintf("%9.f", b.Viewers))
+		characters := len(fmt.Sprintf("%7.f", b.Viewers))
 
 		if viewers_column_end < characters {
 			viewers_column_end = characters
+		}
+
+		if len(b.Channel.Game) > game_column_end {
+			game_column_end = len(b.Channel.Game)
 		}
 	}
 
@@ -68,7 +73,7 @@ func draw() {
 		var x int
 		var r rune
 
-		for x, r = range fmt.Sprintf("%9.f", b.Viewers) {
+		for x, r = range fmt.Sprintf("%7.f", b.Viewers) {
 			s.SetContent(x, y + 1, r, nil, viewerStyle)
 		}
 
@@ -78,6 +83,10 @@ func draw() {
 
 		for x, r = range b.Channel.Game {
 			s.SetContent(x + viewers_column_end + name_column_end + 2, y + 1, r, nil, gameStyle)
+		}
+
+		for x, r = range b.Channel.Status {
+			s.SetContent(x + viewers_column_end + game_column_end + name_column_end + 3, y + 1, r, nil, statusStyle)
 		}
 	}
 
@@ -101,6 +110,7 @@ func main() {
 	nameStyle = nameStyle.Foreground(tcell.ColorWhite)
 	gameStyle = gameStyle.Foreground(tcell.ColorGreen)
 	viewerStyle = viewerStyle.Foreground(tcell.ColorFuchsia)
+	statusStyle = statusStyle.Foreground(tcell.ColorLightSlateGray)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
