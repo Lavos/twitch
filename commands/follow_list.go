@@ -3,39 +3,40 @@ package main
 import (
 	"os"
 	"fmt"
-	"log"
 	"strings"
 	"github.com/Lavos/twitch"
 	"flag"
+	"github.com/kelseyhightower/envconfig"
 )
 
 var (
+	c twitch.ClientConfiguration
+	t *twitch.TwitchClient
+
 	newlines = flag.Bool("newlines", false, "Separate entries with newlines instead of spaces.")
 )
 
 func main () {
 	flag.Parse()
-	username := os.Getenv("TWITCH_USERNAME")
+	var err error
+	envconfig.MustProcess("TWITCH", &c)
 
-	if username == "" {
-		log.Fatalf("No username found in TWITCH_USERNAME.")
+	if c.UserID == 0 || c.ClientID == "" {
+		fmt.Fprintf(os.Stderr, "Missing required ENV variables: %#v", c)
+		os.Exit(1)
 	}
 
-	client_id := os.Getenv("TWITCH_CLIENTID")
+	t = twitch.New(c)
 
-	if client_id == "" {
-		log.Fatalf("No client_id found in TWITCH_CLIENTID.")
-	}
-
-	tc := &twitch.TwitchClient{username, client_id}
-
-	channels, err := tc.Follows()
+	channels, err := t.Follows()
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Error getting follows: %#v", err)
+		os.Exit(1)
 	}
 
 	names := make([]string, len(channels))
+
 	for i, c := range channels {
 		names[i] = c.Name
 	}

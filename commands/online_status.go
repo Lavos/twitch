@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	c Configuration
+	c twitch.ClientConfiguration
 	s tcell.Screen
 	t *twitch.TwitchClient
 
@@ -97,7 +97,7 @@ func main() {
 	var err error
 	envconfig.MustProcess("TWITCH", &c)
 
-	if c.Username == "" || c.ClientID == "" {
+	if c.UserID == 0 || c.ClientID == "" {
 		fmt.Fprintf(os.Stderr, "Missing required ENV variables: %#v", c)
 		os.Exit(1)
 	}
@@ -123,7 +123,7 @@ func main() {
 	}
 
 	// create Twitch Client
-	t = &twitch.TwitchClient{c.Username, c.ClientID}
+	t = twitch.New(c)
 
 	// create ticker
 	tc := time.NewTicker(1 * time.Second)
