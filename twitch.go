@@ -17,6 +17,7 @@ type Follow struct {
 }
 
 type Channel struct {
+	ID string `json:"_id"`
 	Status string `json:"status"`
 	Name string `json:"name"`
 	Game string `json:"game"`
@@ -31,7 +32,14 @@ type Stream struct {
 	FPS float64 `json:"average_fps"`
 	Height float64 `json:"video_height"`
 
-	Channel Channel `json:"channel"`
+	Channel StreamChannel `json:"channel"`
+}
+
+type StreamChannel struct {
+	ID int64 `json:"_id"`
+	Status string `json:"status"`
+	Name string `json:"name"`
+	Game string `json:"game"`
 }
 
 type ClientConfiguration struct {
@@ -97,18 +105,19 @@ func (t *TwitchClient) Online() ([]Stream, error) {
 		return nil, err
 	}
 
-	names := make([]string, len(channels))
+	ids := make([]string, len(channels))
+
 	for i, c := range channels {
-		names[i] = c.Name
+		ids[i] = c.ID
 	}
 
-	online_url, _ := url.Parse("https://api.twitch.tv/kraken/streams")
+	online_url, _ := url.Parse("https://api.twitch.tv/kraken/streams/")
 	q := online_url.Query()
-	q.Add("channel", strings.Join(names, ","))
+	q.Add("channel", strings.Join(ids, ","))
 	online_url.RawQuery = q.Encode()
 
 	req, _ := http.NewRequest("GET", online_url.String(), nil)
-	req.Header.Add("Accept", "application/vnd.twitchtv.v3+json")
+	req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
 	req.Header.Add("Client-ID", t.ClientID)
 
 	resp, err := http.DefaultClient.Do(req)

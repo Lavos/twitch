@@ -1,29 +1,24 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"log"
 	"github.com/Lavos/twitch"
 	"github.com/daviddengcn/go-colortext"
+	"github.com/kelseyhightower/envconfig"
+)
+
+var (
+	c twitch.ClientConfiguration
 )
 
 func main () {
-	username := os.Getenv("TWITCH_USERNAME")
+	envconfig.MustProcess("TWITCH", &c)
 
-	if username == "" {
-		log.Fatalf("No username found in TWITCH_USERNAME.")
-	}
+	// create Twitch Client
+	t := twitch.New(c)
 
-	client_id := os.Getenv("TWITCH_CLIENTID")
-
-	if client_id == "" {
-		log.Fatalf("No client_id found in TWITCH_CLIENTID.")
-	}
-
-	tc := &twitch.TwitchClient{username, client_id}
-
-	streams, err := tc.Online()
+	streams, err := t.Online()
 
 	if err != nil {
 		log.Fatal(err)
